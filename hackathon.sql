@@ -1,143 +1,170 @@
-create database if not exists e_sports_db;
-use e_sports_db;
-#1	
-create table games (
-    game_id varchar(5) primary key,
-    game_name varchar(100) not null unique,
-    genre varchar(50) not null,
-    developer varchar(100) not null
-);
+#MÃ ĐỀ 002
+# PHẦN 1: Tạo CSDL và các bảng quản lý phòng Gym (15 điểm)
+create database gym_management;
+use gym_management;
 
-create table matches (
-    match_id varchar(5) primary key,
-    game_id varchar(5) not null,
-    arena_name varchar(50) not null,
-    start_time datetime not null,
-    entry_fee decimal(10, 2) not null,
-    foreign key (game_id) references games(game_id)
-);
-
-create table players (
-    player_id varchar(5) primary key,
-    nickname varchar(100) not null,
+# Yêu cầu : Tạo 4 bảng Members , Trainers , Classes , Enrollments với đúng cấu trúc, kiểu dữ liệu, khóa chính, khóa ngoại.
+create table members (
+    member_id varchar(5) primary key not null,
+    full_name varchar(100) not null,
     email varchar(100) not null unique,
-    rank_level varchar(50) not null
+    phone varchar(15) not null,
+    membership_type varchar(50) not null,
+    join_date date not null
 );
 
-create table registrations (
-    reg_id int primary key auto_increment,
-    match_id varchar(5) not null,
-    player_id varchar(5) not null,
-    team_name varchar(50) not null,
+create table trainers (
+    trainer_id varchar(5) primary key not null,
+    full_name varchar(100) not null,
+    specialty varchar(100) not null,
+    experience int not null,
+    salary decimal(12,2) not null
+);
+
+create table classes (
+    class_id varchar(5) primary key not null,
+    class_name varchar(100) not null unique,
+    trainer_id varchar(5) not null,
+    schedule_time datetime not null,
+    max_capacity int not null,
+    fee decimal(10,2) not null,
+    foreign key (trainer_id) references trainers(trainer_id)
+);
+create table enrollments (
+    enrollment_id int primary key not null auto_increment,
+    class_id varchar(5) not null,
+    member_id varchar(5) not null,
     status varchar(20) not null,
-    foreign key (match_id) references matches(match_id),
-    foreign key (player_id) references players(player_id),
-    unique (match_id, player_id) 
+    enroll_date date not null,
+    foreign key (class_id) references classes(class_id),
+    foreign key (member_id) references members(member_id),
+    unique (class_id, member_id)
 );
-#2
-insert into games (game_id, game_name, genre, developer) values
-('G01', 'League of Legends', 'MOBA', 'Riot'),
-('G02', 'Valorant', 'FPS', 'Riot'),
-('G03', 'DOTA 2', 'MOBA', 'Valve'),
-('G04', 'CS2', 'FPS', 'Valve');
 
-insert into matches (match_id, game_id, arena_name, start_time, entry_fee) values
-('S01', 'G01', 'Stadium A', '2025-11-10 18:00:00', 500000.00),
-('S02', 'G02', 'Studio B', '2025-11-10 20:00:00', 300000.00),
-('S03', 'G01', 'Stadium A', '2025-11-11 09:00:00', 200000.00),
-('S04', 'G04', 'Online Server', '2025-11-12 14:00:00', 150000.00);
+# Chèn dữ liệu 
+# Bảng Members (Thành Viên)
+insert into members (member_id, full_name, email, phone, membership_type, join_date) values
+('M01', 'Nguyễn Văn An', 'an.nguyen@gmail.com', '0912345678', 'Premium', '2025-01-15'),
+('M02', 'Trần Thị Bình', 'binh.tran@gmail.com', '0987654321', 'VIP', '2025-02-20'),
+('M03', 'Lê Hoàng Cường', 'cuong.le@gmail.com', '0978123456', 'Basic', '2025-03-10'),
+('M04', 'Phạm Minh Dũng', 'dung.pham@gmail.com', '0909876543', 'Premium', '2025-04-05');
 
-insert into players (player_id, nickname, email, rank_level) values
-('P01', 'Faker', 'faker@t1.com', 'Challenger'),
-('P02', 'TenZ', 'tenz@sentinels.com', 'Radiant'),
-('P03', 'S1mple', 'simple@navi.com', 'Global Elite');
+# Bảng Trainers (Huấn luyện viên)
+insert into trainers (trainer_id, full_name, specialty, experience, salary) values
+('T01', 'Coach Alex', 'Strength Training', 8, 25000000.00),
+('T02', 'Huấn luyện viên Lan', 'Yoga & Pilates', 6, 18000000.00),
+('T03', 'Coach Minh', 'Functional Fitness', 10, 30000000.00);
 
-insert into registrations (reg_id, match_id, player_id, team_name, status) values
-(1, 'S01', 'P01', 'T1', 'Confirmed'),
-(2, 'S02', 'P02', 'Sentinels', 'Confirmed'),
-(3, 'S01', 'P03', 'NAVI', 'Canceled'),
-(4, 'S04', 'P01', 'T1', 'Confirmed'),
-(5, 'S03', 'P02', 'MixTeam', 'Pending');
-#3
-update matches 
-set entry_fee = entry_fee * 1.15 
-where match_id = 'S01';
+# Bảng Classes (Lớp học)
+insert into classes (class_id, class_name, trainer_id, schedule_time, max_capacity, fee) values
+('C01', 'Morning Strength', 'T01', '2025-11-10 06:30:00', 20, 150000.00),
+('C02', 'Yoga Flow', 'T02', '2025-11-10 17:30:00', 15, 120000.00),
+('C03', 'HIIT Burn', 'T03', '2025-11-11 18:00:00', 18, 180000.00),
+('C04', 'Power Lifting', 'T01', '2025-11-12 07:00:00', 12, 200000.00);
 
-update players 
-set rank_level = 'Legendary' 
-where nickname = 'Faker';
+# Bảng Enrollments (Đăng ký học)
+insert into enrollments (enrollment_id, class_id, member_id, status, enroll_date) values
+(1, 'C01', 'M01', 'Confirmed', '2025-11-01'),
+(2, 'C02', 'M02', 'Confirmed', '2025-11-02'),
+(3, 'C01', 'M03', 'Canceled', '2025-11-03'),
+(4, 'C04', 'M01', 'Confirmed', '2025-11-05'),
+(5, 'C03', 'M04', 'Pending', '2025-11-06');
 
-delete from registrations 
+# Lớp C03 (HIIT Burn) có nhu cầu cao → tăng học phí (fee) thêm 20% .
+update classes set fee = fee * 1.2
+where class_id = 'C03';
+
+# Cập nhật membership_type của thành viên M02 thành 'VIP Elite' .
+update members set membership_type = 'VIP Elite'
+where member_id = 'M02';
+
+# Xóa tất cả các đơn đăng ký có trạng thái 'Canceled' .
+delete from enrollments 
 where status = 'Canceled';
 
-alter table matches 
-add constraint chk_entry_fee check (entry_fee >= 0);
+# Thêm ràng buộc cho cột fee trong bảng Classes: học phí phải >= 0 .
+alter table classes add constraint chk_fee check (fee >= 0);
 
-alter table registrations 
-alter column status set default 'Pending';
+# Thiết lập giá trị mặc định cho cột status trong bảng Enrollments là 'Pending' .
+alter table enrollments modify status varchar(20) not null default 'Pending';
 
-alter table players 
-add column nationality varchar(50);
+# Thêm cột gender (VARCHAR(10)) vào bảng Members sau khi tạo bảng (giá trị có thể là 'Male', 'Female', 'Other').
+alter table members 
+add column gender varchar(10);
 
-select * from games 
-where genre = 'MOBA';
+# PHẦN 2: Truy vấn dữ liệu cơ bản 
 
-select nickname, email from players 
-where nickname like '%e%';
+# Liệt kê tất cả các lớp học có chuyên môn liên quan đến "Strength" hoặc "Fitness" .
+select c.* from classes c 
+join trainers t on c.trainer_id = t.trainer_id 
+where t.specialty like '%Strength%' or t.specialty like '%Fitness%';
 
-select match_id, arena_name, start_time from matches 
-order by start_time desc;
+# Lấy thông tin full_name , email của những thành viên có tên chứa ký tự 'n' .
+select full_name, email 
+from members
+where full_name like '%n%';
 
-select * from matches 
-order by entry_fee asc 
-limit 3;
+# Hiển thị danh sách các lớp học gồm class_id , class_name , schedule_time , sắp xếp theo schedule_time tăng dần.
+select class_id, class_name, schedule_time
+from classes
+order by schedule_time asc;
 
-select game_name, genre from games 
+# Lấy ra 3 lớp học có học phí (fee) thấp nhất.
+select * from classes order by fee asc limit 3;
+
+# Hiển thị class_name , specialty từ bảng Classes và Trainers , bỏ qua lớp đầu tiên và lấy 2 lớp tiếp theo .
+select c.class_name, t.specialty 
+from classes c 
+join trainers t on c.trainer_id = t.trainer_id 
 limit 2 offset 1;
 
-update matches 
-set entry_fee = entry_fee * 0.8 
-where arena_name = 'Online Server';
+# Giảm 15% học phí cho tất cả các lớp học diễn ra vào buổi sáng (trước 12:00).
+update classes set fee = fee * 0.85 where hour(schedule_time) < 12;
 
-update players 
-set nickname = upper(nickname);
+# Chuyển đổi toàn bộ full_name của thành viên trong bảng Members thành chữ in hoa .
+update members set full_name = upper(full_name);
 
-delete from registrations 
-where match_id in (select match_id from matches where entry_fee = 0);
+# Xóa tất cả các lớp học có học phí bằng 0 (nếu có) và đảm bảo xử lý ràng buộc khóa ngoại với bảng Enrollments .
+delete from enrollments 
+where class_id in (select class_id from classes where fee = 0);
+delete from classes where fee = 0;
 
-delete from matches 
-where entry_fee = 0;
+# PHẦN 3: Truy vấn dữ liệu nâng cao 
 
-select r.reg_id, p.nickname, g.game_name, r.team_name
-from registrations r
-join matches m on r.match_id = m.match_id
-join games g on m.game_id = g.game_id
-join players p on r.player_id = p.player_id
-where r.status = 'Confirmed';
+# Hiển thị enrollment_id , full_name (thành viên), class_name , team_name → thay bằng trainer_full_name của các đơn đăng ký có trạng thái 'Confirmed' .
+select e.enrollment_id, m.full_name as member_name, c.class_name, t.full_name as trainer_full_name 
+from enrollments e 
+join members m on e.member_id = m.member_id 
+join classes c on e.class_id = c.class_id 
+join trainers t on c.trainer_id = t.trainer_id 
+where e.status = 'Confirmed';
 
-select g.game_name, m.start_time
-from games g
-left join matches m on g.game_id = m.game_id;
+# Liệt kê tất cả các lớp học ( class_name ) và thời gian ( schedule_time ) tương ứng. Hiển thị cả những lớp chưa có thành viên nào đăng ký .
+select distinct c.class_name, c.schedule_time 
+from classes c 
+left join enrollments e on c.class_id = e.class_id;
 
-select status, count(*) as total_registrations
-from registrations
-group by status;
+# Tính tổng số đơn đăng ký theo từng trạng thái ( status ).
+select status, count(*) as total_enrollments from enrollments group by status;
 
-select p.nickname, count(r.match_id) as total_matches
-from players p
-join registrations r on p.player_id = r.player_id
-group by p.player_id, p.nickname
-having count(r.match_id) >= 2;
+# Thống kê số lượng lớp học mà mỗi thành viên đã đăng ký. Chỉ hiển thị những thành viên đăng ký từ 2 lớp trở lên .
+select m.full_name, count(e.class_id) as total_classes 
+from members m 
+join enrollments e on m.member_id = e.member_id 
+group by m.member_id, m.full_name 
+having count(e.class_id) >= 2;
 
-select * from matches
-where entry_fee < (select avg(entry_fee) from matches);
+# Lấy thông tin các lớp học có học phí thấp hơn học phí trung bình của tất cả các lớp.
+select * from classes
+where fee < (select avg(fee) from classes);
 
-select distinct p.nickname, p.rank_level
-from players p
-join registrations r on p.player_id = r.player_id
-join matches m on r.match_id = m.match_id
-join games g on m.game_id = g.game_id
-where g.game_name = 'League of Legends';
+# Hiển thị full_name và membership_type của những thành viên đã đăng ký tham gia lớp "Morning Strength" .
+select m.full_name, m.membership_type 
+from members m 
+join enrollments e on m.member_id = e.member_id 
+join classes c on e.class_id = c.class_id 
+where c.class_name = 'Morning Strength';
 
-select * from matches
-where year(start_time) = 2025 and month(start_time) = 11;
+# Liệt kê danh sách các lớp học diễn ra trong tháng 11 năm 2025 .
+select * from classes 
+where month(schedule_time) = 11 and year(schedule_time) = 2025;
